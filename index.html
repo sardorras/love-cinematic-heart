@@ -1,170 +1,82 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LOVE — made of a thousand little words</title>
-  <style>
-    :root { color-scheme: dark; }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
-    body {
-      background: radial-gradient(circle at 50% 42%, #260d25 0%, #100916 42%, #05050c 100%);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    }
-    canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
-    .caption {
-      position: fixed; z-index: 2; left: 50%; bottom: clamp(32px, 9vh, 92px);
-      transform: translateX(-50%); text-align: center; pointer-events: none;
-      text-shadow: 0 0 22px rgba(255, 71, 166, .35);
-    }
-    .caption h1 {
-      margin: 0; font-size: clamp(2.4rem, 8vw, 5.7rem); line-height: .9;
-      font-weight: 300; letter-spacing: .32em; padding-left: .32em;
-      color: #fff; text-shadow: 0 0 18px #ff3b9d, 0 0 42px rgba(255, 29, 132, .6);
-    }
-    .caption p {
-      margin: 18px 0 0; color: rgba(255, 210, 231, .68); font-size: clamp(.62rem, 1.7vw, .86rem);
-      letter-spacing: .2em; text-transform: uppercase;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Сумая, прости меня 🙈 Тёплая открытка с извинениями и смешными обезьянками.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Сумая, прости меня 🙈">
+  <meta property="og:description" content="Эти обезьянки пришли извиниться за меня. Открой открытку 💛">
+  <meta property="og:locale" content="ru_RU">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Сумая, прости меня 🙈">
+  <meta name="twitter:description" content="Эти обезьянки пришли извиниться за меня. Открой открытку 💛">
+  <meta name="theme-color" content="#ffbd83">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%F0%9F%99%88%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <title>Сумая, прости меня 🙈</title>
 </head>
 <body>
-  <canvas id="scene" aria-label="Анимация сердца, состоящего из слов LOVE"></canvas>
-  <div class="caption"><h1>LOVE</h1><p>made of a thousand little words</p></div>
-  <script>
-    const canvas = document.querySelector('#scene');
-    const ctx = canvas.getContext('2d', { alpha: false });
-    const TAU = Math.PI * 2;
-    let dpr = 1, W = 0, H = 0, cx = 0, cy = 0, heartW = 0, heartH = 0;
-    const COUNT = 620;
-    const words = [], particles = [], stars = [];
+  <div class="ambient" aria-hidden="true"></div>
+  <div id="monkey-field" class="monkey-field" aria-label="Плавающие обезьянки"></div>
+  <div id="banana-field" class="banana-field" aria-hidden="true"></div>
 
-    const phases = { float: 2600, gather: 4400, pulse: 5600, burst: 1050, reform: 2600 };
-    let phase = 'float', phaseStarted = performance.now(), flash = 0;
+  <main>
+    <section class="hero section" id="hero" aria-labelledby="hero-title">
+      <div class="counter" aria-live="polite"><span id="counter-label"></span> <strong id="monkey-count">5</strong></div>
+      <p class="eyebrow" id="hero-eyebrow"></p>
+      <h1 id="hero-title"></h1>
+      <p class="hero-subtitle" id="hero-subtitle"></p>
+      <button class="hero-monkey" id="hero-monkey" type="button" aria-label="Большая обезьянка с табличкой. Нажми пять раз для сюрприза.">
+        <span class="hero-monkey-face" aria-hidden="true">🙈</span>
+        <span class="sign" id="monkey-sign"></span>
+        <span class="hero-speech" id="hero-speech" aria-live="polite"></span>
+      </button>
+      <a class="scroll-hint" href="#letter" id="scroll-link"></a>
+    </section>
 
-    function ease(t) { t = Math.max(0, Math.min(1, t)); return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
-    function smooth(t) { return t * t * (3 - 2 * t); }
+    <section class="section letter-section" id="letter" aria-labelledby="letter-title">
+      <p class="eyebrow" id="letter-eyebrow"></p>
+      <h2 id="letter-title"></h2>
+      <article class="glass letter-card">
+        <div id="letter-copy" class="letter-copy" aria-live="polite"></div>
+        <p class="signature" id="signature"></p>
+      </article>
+    </section>
 
-    function heartPoint(t) {
-      // Classic parametric heart, deliberately used only for the boundary.
-      const x = 16 * Math.sin(t) ** 3;
-      const y = -(13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t));
-      return { x, y };
-    }
+    <section class="section reasons-section" id="reasons" aria-labelledby="reasons-title">
+      <p class="eyebrow" id="reasons-eyebrow"></p>
+      <h2 id="reasons-title"></h2>
+      <p class="section-hint" id="reasons-hint"></p>
+      <div class="reason-grid" id="reason-grid"></div>
+    </section>
 
-    function pointInPolygon(x, y, polygon) {
-      let inside = false;
-      for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-        const a = polygon[i], b = polygon[j];
-        if ((a.y > y) !== (b.y > y) && x < (b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x) inside = !inside;
-      }
-      return inside;
-    }
+    <section class="section question-section" id="question" aria-labelledby="question-title">
+      <p class="eyebrow" id="question-eyebrow"></p>
+      <h2 id="question-title"></h2>
+      <p class="question-note" id="question-note"></p>
+      <div class="answer-arena" id="answer-arena">
+        <button class="button button-yes" id="yes-button" type="button"></button>
+        <button class="button button-no" id="no-button" type="button"></button>
+      </div>
+    </section>
 
-    function makeTargets() {
-      const boundary = [];
-      for (let i = 0; i < 260; i++) {
-        const p = heartPoint(i / 260 * TAU);
-        boundary.push({ x: cx + p.x * heartW / 32, y: cy + p.y * heartH / 34 });
-      }
-      const minX = cx - heartW/2, maxX = cx + heartW/2;
-      const minY = cy - heartH/2, maxY = cy + heartH/2;
-      const targets = [];
-      // Rejection sampling fills the actual interior instead of placing words on a ring.
-      while (targets.length < COUNT) {
-        const x = minX + Math.random() * (maxX-minX);
-        const y = minY + Math.random() * (maxY-minY);
-        if (pointInPolygon(x, y, boundary)) targets.push({ x, y });
-      }
-      return targets;
-    }
+    <section class="section finale-section" id="finale" aria-labelledby="finale-title" hidden>
+      <div class="finale-monkeys" aria-hidden="true">🐒 💃 🐵 🕺 🙈</div>
+      <p class="eyebrow" id="finale-eyebrow"></p>
+      <h2 id="finale-title"></h2>
+      <p class="finale-promise" id="finale-promise"></p>
+      <button class="button button-yes replay-button" id="replay-button" type="button"></button>
+    </section>
+  </main>
 
-    function resize() {
-      dpr = Math.min(devicePixelRatio || 1, 2);
-      W = innerWidth; H = innerHeight;
-      canvas.width = Math.floor(W*dpr); canvas.height = Math.floor(H*dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cx = W/2; cy = H * .405;
-      heartW = Math.min(W * .76, H * .62);
-      heartH = heartW * 1.02;
-      const targets = makeTargets();
-      words.forEach((word, i) => { word.tx = targets[i].x; word.ty = targets[i].y; });
-    }
+  <button class="banana-rain-button" id="banana-rain-button" type="button"></button>
+  <div class="sr-only" id="announcement" aria-live="polite"></div>
 
-    class Word {
-      constructor(target) {
-        this.tx = target.x; this.ty = target.y;
-        this.x = Math.random()*W; this.y = Math.random()*H;
-        this.vx = (Math.random()-.5)*.28; this.vy = (Math.random()-.5)*.28;
-        this.size = 7 + Math.random()*7; this.angle = (Math.random()-.5)*.55;
-        this.spin = (Math.random()-.5)*.0018; this.alpha = .48 + Math.random()*.5;
-        this.seed = Math.random()*TAU; this.burstX = 0; this.burstY = 0;
-      }
-      update(now, progress) {
-        this.angle += this.spin;
-        if (phase === 'float') {
-          this.x += this.vx; this.y += this.vy;
-          if (this.x < -50 || this.x > W+50) this.vx *= -1;
-          if (this.y < -50 || this.y > H+50) this.vy *= -1;
-        } else if (phase === 'gather' || phase === 'reform') {
-          const e = ease(progress), drift = Math.sin(now*.001 + this.seed)*(.7 + 2.2*e);
-          this.x += (this.tx + drift - this.x) * (.035 + .065*e);
-          this.y += (this.ty + Math.cos(now*.0011 + this.seed)*(.7 + 2.2*e) - this.y) * (.035 + .065*e);
-        } else if (phase === 'pulse') {
-          const beat = Math.pow(Math.max(0, Math.sin(progress * Math.PI * 3)), 8);
-          const scale = 1 + beat*.055;
-          this.x += (cx + (this.tx-cx)*scale - this.x)*.17;
-          this.y += (cy + (this.ty-cy)*scale - this.y)*.17;
-        } else if (phase === 'burst') {
-          this.x += this.burstX; this.y += this.burstY; this.burstX *= .965; this.burstY *= .965;
-        }
-      }
-      draw() {
-        ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle);
-        ctx.font = `600 ${this.size}px Arial, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(255, 40, 151, .92)'; ctx.shadowBlur = 7;
-        ctx.fillStyle = `rgba(255, ${150+Math.floor(this.alpha*80)}, ${205+Math.floor(this.alpha*45)}, ${this.alpha})`;
-        ctx.fillText('LOVE', 0, 0); ctx.restore();
-      }
-    }
-
-    class Particle {
-      constructor(x, y) { this.x=x; this.y=y; const a=Math.random()*TAU, s=1+Math.random()*5; this.vx=Math.cos(a)*s; this.vy=Math.sin(a)*s; this.life=1; this.r=1+Math.random()*2.5; }
-      update() { this.x+=this.vx; this.y+=this.vy; this.vx*=.985; this.vy*=.985; this.life-=.018; }
-      draw() { ctx.beginPath(); ctx.fillStyle=`rgba(255,125,205,${this.life})`; ctx.shadowColor='#ff4cab'; ctx.shadowBlur=12; ctx.arc(this.x,this.y,this.r,0,TAU); ctx.fill(); }
-    }
-
-    function startBurst() {
-      words.forEach((w, i) => { if (i % 9 === 0) { const a=Math.random()*TAU, s=3+Math.random()*6; w.burstX=Math.cos(a)*s; w.burstY=Math.sin(a)*s; } });
-      for (let i=0; i<170; i++) particles.push(new Particle(cx+(Math.random()-.5)*heartW*.8, cy+(Math.random()-.5)*heartH*.7));
-      flash = 1;
-    }
-
-    function drawBackdrop(now) {
-      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*.65);
-      g.addColorStop(0,'#250c25'); g.addColorStop(.5,'#100916'); g.addColorStop(1,'#05050c'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-      ctx.globalAlpha=.22; stars.forEach(s => { s.y += s.v; if(s.y>H) s.y=0; ctx.fillStyle='#ffb9dd'; ctx.fillRect(s.x,s.y,s.r,s.r); }); ctx.globalAlpha=1;
-    }
-
-    function frame(now) {
-      const elapsed=now-phaseStarted, progress=Math.min(elapsed/phases[phase],1);
-      if (progress >= 1) { phase = phase==='float'?'gather':phase==='gather'?'pulse':phase==='pulse'?'burst':phase==='burst'?'reform':'float'; phaseStarted=now; if(phase==='burst') startBurst(); }
-      drawBackdrop(now);
-      if (phase !== 'float') {
-        const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,heartW*.72); glow.addColorStop(0,`rgba(255,30,145,${.12+.08*Math.sin(now*.004)})`); glow.addColorStop(1,'rgba(255,20,145,0)'); ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
-      }
-      words.forEach(w=>{w.update(now,progress);w.draw();});
-      for(let i=particles.length-1;i>=0;i--){particles[i].update();particles[i].draw();if(particles[i].life<=0)particles.splice(i,1);}
-      if(flash>0){ctx.fillStyle=`rgba(255,180,225,${flash*.18})`;ctx.fillRect(0,0,W,H);flash*=.91;}
-      requestAnimationFrame(frame);
-    }
-
-    resize();
-    for(let i=0;i<130;i++) stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+.2,v:Math.random()*.18+.03});
-    const initial=makeTargets(); for(let i=0;i<COUNT;i++) words.push(new Word(initial[i]));
-    addEventListener('resize', resize);
-    requestAnimationFrame(frame);
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
